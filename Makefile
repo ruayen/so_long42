@@ -1,57 +1,51 @@
-NAME	= so_long
-LIBMLX	= ./MLX
-LIBFT	= ./libft
-LIBPF	= ./printf
-LIBGN	= ./get_next_line
+NAME            = so_long
 
-HEADERS	= -I ./includes -I ${LIBMLX}/include -I ${LIBFT} -I ${LIBGN} -I ${LIBPF}
-LIBGL	= -lglfw -L"/Users/raissaou/.brew/opt/glfw/lib"
-LIBS	= ${LIBGL} ${LIBMLX}/libmlx42.a ${LIBFT}/libft.a ${LIBPF}/libftprintf.a ${LIBGN}/get_next_line.a
-SRCS	= main.c \
-			check_map.c \
-			check_map_2.c \
-			collectibles.c \
-			images.c \
-			map.c \
-			move.c
+CC              = cc
+CFLAGS          = -Wall -Wextra -Werror
+LIBFT           = ./libft
+MLX42           = ./MLX42/build
+FT_PRINTF       = ./ft_printf
+INCLUDES        = -I$(MLX42)/include -I$(LIBFT)/include -I$(FT_PRINTF)/include -Iincludes
+LIBS            = -L$(MLX42) -lmlx42 -lglfw -lX11 -lXext -lm -lpthread -L$(LIBFT) -lft -L$(FT_PRINTF) -lftprintf
 
-OBJS	= ${SRCS:.c=.o}
+SRC_DIR         = ./srcs
+OBJ_DIR         = ./obj
 
+SRC_FILES       = main.c \
+                  check_map.c \
+                  check_map2.c \
+                  coins.c \
+                  images.c \
+                  map.c \
+                  moves.c
 
-all: libft libmlx libpf libgn ${NAME}
+OBJS            = $(addprefix $(OBJ_DIR)/, $(SRC_FILES:.c=.o))
 
-libft:
-	@${MAKE} -C ${LIBFT}
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(OBJ_DIR)
+	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-libmlx:
-	@${MAKE} -C ${LIBMLX}
+$(NAME): $(LIBFT)/libft.a $(FT_PRINTF)/libftprintf.a $(OBJS)
+	@$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(LIBS)
 
-libpf:
-	@${MAKE} -C ${LIBPF}
+$(LIBFT)/libft.a:
+	@$(MAKE) -C $(LIBFT)
 
-libgn:
-	@${MAKE} -C ${LIBGN}
+$(FT_PRINTF)/libftprintf.a:
+	@$(MAKE) -C $(FT_PRINTF)
 
-%.o: %.c
-	@${CC} ${CFLAGS} -o $@ -c $< ${HEADERS}
-
-${NAME}: ${OBJS}
-	@${CC} ${DFLAGS} ${OBJS} ${LIBS} ${HEADERS} -o ${NAME}
+all:    $(NAME)
 
 clean:
-	@rm -f ${OBJS}
-	@${MAKE} -C ${LIBFT} clean
-	@${MAKE} -C ${LIBMLX} clean
-	@${MAKE} -C ${LIBPF} clean
-	@${MAKE} -C ${LIBGN} clean
+	@$(MAKE) -C $(LIBFT) clean
+	@$(MAKE) -C $(FT_PRINTF) clean
+	@rm -r $(OBJ_DIR)
 
 fclean: clean
-	@rm -f ${NAME}
-	@${MAKE} -C ${LIBFT} fclean
-	@${MAKE} -C ${LIBMLX} fclean
-	@${MAKE} -C ${LIBPF} fclean
-	@${MAKE} -C ${LIBGN} fclean
-	
-re: clean all
+	@rm $(NAME)
+	@rm $(LIBFT)/libft.a
+	@rm $(FT_PRINTF)/libftprintf.a
 
-.PHONY: all, clean, fclean, re, libmlx, libft
+re: fclean all
+
+.PHONY: all clean fclean re
